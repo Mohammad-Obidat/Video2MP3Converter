@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="stylesheet" href="../css/style.css" />
+    <title>Video to MP3 Converter</title>
+  </head>
+  <body>
+    <h1 class="app-name">Video to MP3 Converter</h1>
+
+    <form action="/convert-mp3" method="POST" id="converter-form">
+      <label for="video-url">Video URL:</label>
+      <input
+        type="url"
+        name="videoURL"
+        id="video-url"
+        placeholder="Enter video URL"
+        required
+      />
+      <button type="submit">Convert to MP3</button>
+    </form>
+
+    <div id="loading">
+      <div class="loading-spinner"></div>
+      <p>Loading...</p>
+    </div>
+
+    <p id="message"></p>
+    <script src="../script.js"></script>
+  </body>
+</html>
