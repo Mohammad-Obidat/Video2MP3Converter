@@ -37,7 +37,6 @@ app.post('/convert-mp3', async (req, res) => {
   try {
     const videoInfo = await ytdl.getInfo(videoUrl);
     const title = videoInfo?.videoDetails.title;
-    const audioFile = path.join(musicFolderPath, `${title}.mp3`);
 
     if (!videoInfo || !videoInfo.formats || videoInfo.formats.length === 0) {
       return res.status(400).json({
@@ -54,14 +53,8 @@ app.post('/convert-mp3', async (req, res) => {
       });
     }
 
-    // Fetch the video stream without downloading the video file
-    const videoStream = ytdl(videoUrl, {
-      filter: 'audioonly',
-      quality: 'highestaudio',
-    });
-
-    // Convert the video stream to MP3 using fluent-ffmpeg
-    ffmpeg(videoStream)
+    // Set up ffmpeg to convert the audio stream to MP3
+    const converter = ffmpeg(ytdl(videoUrl, { filter: 'audioonly' }))
       .toFormat('mp3')
       .on('end', () => {
         res.status(200).json({ status: 'success' });
@@ -69,17 +62,9 @@ app.post('/convert-mp3', async (req, res) => {
       .on('error', (error) => {
         console.error('Error during conversion:', error.stack);
         res.status(500).json({ status: 'failure', error: 'Conversion failed' });
+      });
 
-        // Perform cleanup tasks (like deleting temporary files)
-        if (fs.existsSync(audioFile)) {
-          fs.unlink(audioFile, (err) => {
-            if (err) {
-              console.error('Error deleting audio file:', err);
-            }
-          });
-        }
-      })
-      .save(audioFile);
+    converter.save(path.join(musicFolderPath, `${title}.mp3`));
   } catch (error) {
     console.error(`Error downloading video: ${error.message}`);
     res.status(500).json({ status: 'failure', error: 'Download failed' });
