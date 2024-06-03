@@ -36,9 +36,8 @@ form.addEventListener('submit', async (e) => {
     });
 
     const data = await response.json();
-    if (response.ok) {
-    if (data.status === 'success') displayMessage('Conversion completed!'); 
-  } else {
+    if (response.ok && data.status === 'success') displayMessage('Conversion completed!'); 
+     else {
       switch (data.error) {
         case 'Invalid YouTube link':
           displayMessage('Invalid YouTube link. Please enter a valid URL.', true);
