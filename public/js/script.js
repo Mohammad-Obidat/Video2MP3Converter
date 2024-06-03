@@ -36,19 +36,30 @@ form.addEventListener('submit', async (e) => {
     });
 
     if (response.ok) {
-      const data = await response.json();
-      if (data.status === 'success') {
-        displayMessage('Conversion completed!');
-      } else {
-        displayMessage(`Conversion failed: ${data.error}`, true);
-      }
+    const data = await response.json();
+    if (data.status === 'success') {
+      displayMessage('Conversion completed!');
     } else {
-      displayMessage('Conversion failed. Please try again.', true);
+      switch (data.error) {
+        case 'Invalid YouTube link':
+          displayMessage('Invalid YouTube link. Please enter a valid URL.', true);
+          break;
+        case 'Video is not available for download':
+          displayMessage('Video is not available for download.', true);
+          break;
+        case 'Video does not contain audio streams':
+          displayMessage('Video does not contain audio streams', true);
+        default:
+          displayMessage(`Conversion failed: ${data.error}`, true);
+      }
     }
-  } catch (error) {
-    displayMessage(`Error: ${error.message}`, true);
-  } finally {
-    loading.style.display = 'none';
-    clearInput();
+  } else {
+    displayMessage('Conversion failed. Please try again.', true);
   }
+} catch (error) {
+  displayMessage(`Error: ${error.message}`, true);
+} finally {
+  loading.style.display = 'none';
+  clearInput();
+}
 });
