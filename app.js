@@ -36,7 +36,7 @@ app.post('/convert-mp3', async (req, res) => {
 
   try {
     const videoInfo = await ytdl.getInfo(videoUrl);
-    const title = videoInfo.videoDetails.title;
+    const title = videoInfo?.videoDetails.title;
     const audioFile = path.join(musicFolderPath, `${title}.mp3`);
 
     if (!videoInfo || !videoInfo.formats || videoInfo.formats.length === 0) {
@@ -55,7 +55,10 @@ app.post('/convert-mp3', async (req, res) => {
     }
 
     // Fetch the video stream without downloading the video file
-      const videoStream = ytdl(videoUrl, { filter: 'audioonly', quality: 'highestaudio' });
+    const videoStream = ytdl(videoUrl, {
+      filter: 'audioonly',
+      quality: 'highestaudio',
+    });
 
     // Convert the video stream to MP3 using fluent-ffmpeg
     ffmpeg(videoStream)
