@@ -54,17 +54,8 @@ app.post('/convert-mp3', async (req, res) => {
       });
     }
 
-    const format = ytdl.chooseFormat(videoInfo.formats, { quality: 'highest' });
-
-    if (!format) {
-      return res.status(400).json({
-        status: 'failure',
-        error: 'No suitable format found for conversion',
-      });
-    }
-
-    // Download video stream
-    const videoStream = ytdl(videoUrl, { format });
+    // Fetch the video stream without downloading the video file
+      const videoStream = ytdl(videoUrl, { filter: 'audioonly', quality: 'highestaudio' });
 
     // Convert the video stream to MP3 using fluent-ffmpeg
     ffmpeg(videoStream)
