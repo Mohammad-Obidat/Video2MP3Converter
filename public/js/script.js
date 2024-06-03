@@ -35,11 +35,10 @@ form.addEventListener('submit', async (e) => {
       body: JSON.stringify({ videoURL }),
     });
 
-    if (response.ok) {
     const data = await response.json();
-    if (data.status === 'success') {
-      displayMessage('Conversion completed!');
-    } else {
+    if (response.ok) {
+    if (data.status === 'success') displayMessage('Conversion completed!'); 
+  } else {
       switch (data.error) {
         case 'Invalid YouTube link':
           displayMessage('Invalid YouTube link. Please enter a valid URL.', true);
@@ -50,12 +49,9 @@ form.addEventListener('submit', async (e) => {
         case 'Video does not contain audio streams':
           displayMessage('Video does not contain audio streams', true);
         default:
-          displayMessage(`Conversion failed: ${data.error}`, true);
+          displayMessage(`Failed: ${data.error}`, true);
       }
     }
-  } else {
-    displayMessage('Conversion failed. Please try again.', true);
-  }
 } catch (error) {
   displayMessage(`Error: ${error.message}`, true);
 } finally {
