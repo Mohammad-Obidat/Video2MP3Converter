@@ -34,7 +34,9 @@ app.post('/convert-mp3', async (req, res) => {
   }
 
   try {
+    const videoID = await ytdl.getVideoID(videoUrl);
     const videoInfo = await ytdl.getInfo(videoUrl);
+    const youtubeUrl = `https://www.youtube.com/watch?v=${videoID}`;
     const title = videoInfo?.videoDetails.title;
 
     if (!videoInfo || !videoInfo.formats || videoInfo.formats.length === 0) {
@@ -53,17 +55,18 @@ app.post('/convert-mp3', async (req, res) => {
     }
 
     // Set up ffmpeg to convert the audio stream to MP3
-    const converter = ffmpeg(ytdl(videoUrl, { filter: 'audioonly' }))
-      .toFormat('mp3')
+    ffmpeg(ytdl(youtubeUrl, { filter: 'audioonly' }))
+      .audioCodec('libmp3lame')
+      .audioBitrate('128k')
+      // .toFormat('mp3')
       .on('end', () => {
         res.status(200).json({ status: 'success' });
       })
       .on('error', (error) => {
         console.error('Error during conversion:', error.stack);
         res.status(500).json({ status: 'failure', error: 'Conversion failed' });
-      });
-
-    converter.save(path.join(musicFolderPath, `${title}.mp3`));
+      })
+      .save(path.join(musicFolderPath, `${title}.mp3`));
   } catch (error) {
     console.error(`Error downloading video: ${error.message}`);
     res.status(500).json({ status: 'failure', error: 'Download failed' });
