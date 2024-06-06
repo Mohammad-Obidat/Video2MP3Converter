@@ -1,10 +1,12 @@
 const form = document.getElementById('converter-form');
 const videoUrlInput = document.getElementById('video-url');
+const bottomContainer = document.getElementById('bottom-container');
 const message = document.getElementById('message');
 const loading = document.getElementById('loading');
 
 const removeMessage = () => {
   message.innerHTML = '';
+  bottomContainer.style.display = 'none';
 };
 
 const clearInput = () => {
@@ -12,6 +14,7 @@ const clearInput = () => {
 };
 
 const displayMessage = (msg, isError = true) => {
+  bottomContainer.style.display = 'flex';
   message.textContent = msg;
   message.classList.toggle('error', isError);
   message.classList.toggle('success', !isError);
@@ -37,7 +40,7 @@ form.addEventListener('submit', async (e) => {
 
     const _data = await response.json();
     if (response.ok && _data.status === 'success')
-      displayMessage(`completed successfully: ${_data.message}`, false);
+      displayMessage(`completed successfully!`, false);
     else {
       switch (_data.error) {
         case 'Invalid link':

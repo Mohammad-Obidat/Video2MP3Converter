@@ -57,10 +57,7 @@ app.post('/convert-mp3', async (req, res) => {
     })
       .pipe(fs.createWriteStream(outputMP3FilePath))
       .on('finish', () => {
-        res.status(200).json({
-          status: 'success',
-          message: 'Conversion Successful',
-        });
+        res.status(200).json({ status: 'success' });
       })
       .on('error', () => {
         res.status(500).json({ status: 'failure', error: 'Converted Failed' });
