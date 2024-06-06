@@ -1,11 +1,9 @@
 const express = require('express');
 const path = require('path');
 const os = require('os');
+const fs = require('fs');
 const bodyParser = require('body-parser');
 const ytdl = require('ytdl-core');
-const ffmpegPath = require('@ffmpeg-installer/ffmpeg').path;
-const ffmpeg = require('fluent-ffmpeg');
-ffmpeg.setFfmpegPath(ffmpegPath);
 require('dotenv').config();
 
 const app = express();
@@ -28,16 +26,14 @@ app.post('/convert-mp3', async (req, res) => {
   const videoUrl = req.body.videoURL;
 
   if (!videoUrl || !ytdl.validateURL(videoUrl)) {
-    return res
-      .status(400)
-      .json({ status: 'failure', error: 'Invalid YouTube link' });
+    return res.status(400).json({ status: 'failure', error: 'Invalid link' });
   }
 
   try {
-    const videoID = await ytdl.getVideoID(videoUrl);
     const videoInfo = await ytdl.getInfo(videoUrl);
-    const youtubeUrl = `https://www.youtube.com/watch?v=${videoID}`;
+    const video_url = videoInfo?.videoDetails.video_url;
     const title = videoInfo?.videoDetails.title;
+    const outputMP3FilePath = path.join(musicFolderPath, `${title}.mp3`);
 
     if (!videoInfo || !videoInfo.formats || videoInfo.formats.length === 0) {
       return res.status(400).json({
@@ -54,22 +50,24 @@ app.post('/convert-mp3', async (req, res) => {
       });
     }
 
-    // Set up ffmpeg to convert the audio stream to MP3
-    ffmpeg(ytdl(youtubeUrl, { filter: 'audioonly' }))
-      .audioCodec('libmp3lame')
-      .audioBitrate('128k')
-      // .toFormat('mp3')
-      .on('end', () => {
-        res.status(200).json({ status: 'success' });
+    ytdl(video_url, {
+      filter: 'audioonly',
+      quality: 'highestaudio',
+      format: 'mp3',
+    })
+      .pipe(fs.createWriteStream(outputMP3FilePath))
+      .on('finish', () => {
+        res.status(200).json({
+          status: 'success',
+          message: 'Conversion Successful',
+        });
       })
-      .on('error', (error) => {
-        console.error('Error during conversion:', error.stack);
-        res.status(500).json({ status: 'failure', error: 'Conversion failed' });
-      })
-      .save(path.join(musicFolderPath, `${title}.mp3`));
+      .on('error', () => {
+        res.status(500).json({ status: 'failure', error: 'Converted Failed' });
+      });
   } catch (error) {
-    console.error(`Error downloading video: ${error.message}`);
-    res.status(500).json({ status: 'failure', error: 'Download failed' });
+    console.error(`Error converting video: ${error.message}`);
+    res.status(500).json({ status: 'failure', error: 'Convert failed' });
   }
 });
 

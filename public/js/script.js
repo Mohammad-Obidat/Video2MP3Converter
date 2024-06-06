@@ -11,7 +11,7 @@ const clearInput = () => {
   videoUrlInput.value = '';
 };
 
-const displayMessage = (msg, isError = false) => {
+const displayMessage = (msg, isError = true) => {
   message.textContent = msg;
   message.classList.toggle('error', isError);
   message.classList.toggle('success', !isError);
@@ -35,28 +35,27 @@ form.addEventListener('submit', async (e) => {
       body: JSON.stringify({ videoURL }),
     });
 
-    const data = await response.json();
-    if (response.ok && data.status === 'success')
-      displayMessage('Conversion completed successfully!');
+    const _data = await response.json();
+    if (response.ok && _data.status === 'success')
+      displayMessage(`completed successfully: ${_data.message}`, false);
     else {
-      switch (data.error) {
-        case 'Invalid YouTube link':
-          displayMessage(
-            'Invalid YouTube link. Please enter a valid URL.',
-            true
-          );
+      switch (_data.error) {
+        case 'Invalid link':
+          displayMessage('Invalid link. Please enter a valid URL.');
           break;
         case 'Video is not available for download':
-          displayMessage('Video is not available for download.', true);
+          displayMessage('Video is not available for download.');
           break;
         case 'Video does not contain audio streams':
-          displayMessage('Video does not contain audio streams', true);
+          displayMessage('Video does not contain audio streams');
+          break;
         default:
-          displayMessage(`Failed: ${data.error}`, true);
+          displayMessage(`Failed: ${_data.error}`);
+          break;
       }
     }
   } catch (error) {
-    displayMessage(`Error: ${error.message}`, true);
+    displayMessage(`Error: ${error.message}`);
   } finally {
     loading.style.display = 'none';
     clearInput();
