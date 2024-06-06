@@ -31,9 +31,9 @@ app.post('/convert-mp3', async (req, res) => {
 
   try {
     const videoInfo = await ytdl.getInfo(videoUrl);
-    const video_url = videoInfo?.videoDetails.video_url;
     const title = videoInfo?.videoDetails.title;
-    const outputMP3FilePath = path.join(musicFolderPath, `${title}.mp3`);
+    const newTitle = makeFilenameFriendly(title);
+    const outputMP3FilePath = path.join(musicFolderPath, `${newTitle}.mp3`);
 
     if (!videoInfo || !videoInfo.formats || videoInfo.formats.length === 0) {
       return res.status(400).json({
@@ -50,7 +50,7 @@ app.post('/convert-mp3', async (req, res) => {
       });
     }
 
-    ytdl(video_url, {
+    ytdl(videoUrl, {
       filter: 'audioonly',
       quality: 'highestaudio',
       format: 'mp3',
@@ -70,6 +70,12 @@ app.post('/convert-mp3', async (req, res) => {
     res.status(500).json({ status: 'failure', error: 'Convert failed' });
   }
 });
+
+function makeFilenameFriendly(str) {
+  const friendlyStr = str.replace(/[^\p{L}\p{N}\s-]/gu, '-');
+  const trimmedStr = friendlyStr.trim().replace(/\s+/g, ' ');
+  return trimmedStr;
+}
 
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
